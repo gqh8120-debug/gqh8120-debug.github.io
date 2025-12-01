@@ -1,1 +1,625 @@
-<h1>welcome to page</h1>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus@latest/dist/index.css" />
+    <title>Element Plus demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+        }
+
+        #app {
+            height: 100%;
+            /* width: 30%; */
+        }
+
+        .tac {
+            height: calc(100% - 120px);
+        }
+
+        .title {
+            height: 30px;
+        }
+
+        .title::before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 4px;
+            width: 4px;
+            height: 20px;
+            background: #00ab6d;
+            line-height: 1em;
+            margin-right: 8px;
+        }
+
+        .el-menu-vertical-demo {
+            height: 100%;
+            color: #ffffffa6;
+        }
+
+        .menu-title {
+            background-color: #545c64;
+            color: #ffffff;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+            border-right: 1px solid var(--el-menu-border-color);
+        }
+
+        .layout_header {
+            height: 60px;
+            padding: 0 12px 0 0;
+            background: #fff;
+            -webkit-box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+            box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 400;
+            color: #2c3e50;
+        }
+
+        .main_content {
+            height: calc(100% - 120px);
+        }
+
+        .demo-tabs>.el-tabs__content {
+            padding: 32px;
+            color: #6b778c;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .el-tabs--right .el-tabs__content,
+        .el-tabs--left .el-tabs__content {
+            height: 100%;
+        }
+
+        .api-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-around;
+        }
+
+        .api-info-title {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            width: 100%;
+            border-color: #49cc90;
+            background: rgba(73, 204, 144, .1);
+            margin: 10px 0;
+        }
+
+        .api-info-title-type {
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 80px;
+            padding: 6px 15px;
+            text-align: center;
+            border-radius: 3px;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+            font-family: Titillium Web, sans-serif;
+            color: #fff;
+            background: #49cc90;
+        }
+
+        .api-info-title-url {
+            font-size: 14px;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-flex: 0;
+            -ms-flex: 0 3 auto;
+            flex: 0 3 auto;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            word-break: break-all;
+            padding: 0 32px;
+        }
+
+        .api-info-data {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .api-info-data-api {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: flex-start;
+            width: 50%;
+        }
+
+        .api-info-data-api-title {
+            width: 25%;
+        }
+
+        .api-info-request {
+            margin: 10px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-row class="tac">
+            <el-col :span="3">
+                <div class="menu-title">
+                    接口列表
+                </div>
+                <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
+                    :default-active="1" text-color="#fff" @open="handleOpen" @close="handleClose">
+
+                    <el-sub-menu index="1" v-for="(item, index) in menu" :key="index">
+                        <template #title>
+                            <el-icon>
+                                <HomeFilled />
+                            </el-icon>
+                            <span>{{ item.name }}</span>
+                        </template>
+                        <el-menu-item-group v-if="item.children && item.children.length">
+                            <el-menu-item v-for="itm in item.children" :key="itm.index" :index="itm.index"
+                                @click="selectApi(itm)">
+                                <span style="margin-right: 30px;">{{ itm.type }}</span>
+                                <span>{{ itm.title }}</span>
+                            </el-menu-item>
+                        </el-menu-item-group>
+                    </el-sub-menu>
+                </el-menu>
+            </el-col>
+            <el-col :span="21">
+                <div class="layout_header">
+                    <el-icon>
+                        <HomeFilled />
+                    </el-icon>
+                    <span>重大活动保障平台</span>
+                </div>
+                <div class="main_content">
+                    <el-tabs tab-position="left" class="demo-tabs" v-model="activeTab">
+                        <el-tab-pane label="文档" name="doc">
+                            <div>{{activeApiData.name}}</div>
+                            <div class="api-info">
+                                <div class="api-info-title">
+                                    <div class="api-info-title-type">{{activeApiData.method}}</div>
+                                    <div class="api-info-title-url">{{activeApiData.url}}</div>
+                                </div>
+                                <div class="api-info-data">
+                                    <div class="api-info-data-api">
+                                        <div class="api-info-data-api-title">请求数据类型</div>
+                                        <div>{{activeApiData.requestDataType}}</div>
+                                    </div>
+                                    <div class="api-info-data-response api-info-data-api">
+                                        <div class="api-info-data-api-title">响应数据类型</div>
+                                        <div>{{activeApiData.responseDataType}}</div>
+                                    </div>
+                                </div>
+                                <div class="api-info-request">
+                                    <div class="title">请求参数</div>
+                                    <el-table :data="activeApiData.parameters" style="width: 100%;" fit border stripe>
+                                        <el-table-column prop="name" label="参数名称" min-width="150"></el-table-column>
+                                        <el-table-column prop="info" label="参数说明" min-width="200"></el-table-column>
+                                        <el-table-column prop="method" label="请求类型" min-width="120">
+                                            <template #default="scope">
+                                                <span style="color: #fca130;">{{ scope.row.method }}</span>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column prop="isRequired" label="是否必须"
+                                            min-width="100"></el-table-column>
+                                        <el-table-column prop="type" label="数据类型" min-width="120"></el-table-column>
+                                        <el-table-column prop="schema" label="schema"></el-table-column>
+                                    </el-table>
+                                </div>
+                                <div class="api-info-request">
+                                    <div class="title">响应状态</div>
+                                    <el-table :data="activeApiData.responseStatus" style="width: 100%;" fit border
+                                        stripe>
+                                        <el-table-column prop="code" label="状态码" min-width="150"></el-table-column>
+                                        <el-table-column prop="description" label="说明"
+                                            min-width="200"></el-table-column>
+                                        <el-table-column prop="schema" label="schema"></el-table-column>
+                                    </el-table>
+                                </div>
+                                <div class="api-info-request">
+                                    <div class="title">响应参数</div>
+                                    <el-table :data="activeApiData.responseParameters" row-key="name" default-expand-all
+                                        border fit stripe>
+                                        <el-table-column prop="name" label="参数名称"></el-table-column>
+                                        <el-table-column prop="info" label="参数说明"></el-table-column>
+                                        <el-table-column prop="type" label="类型"></el-table-column>
+                                        <el-table-column prop="schema" label="schema"></el-table-column>
+                                    </el-table>
+                                </div>
+                                <div>
+                                    <div class="title">响应示例</div>
+                                    <el-text>
+                                        {{ activeApiData.responseExample}}
+                                    </el-text>
+                                </div>
+                            </div>
+                        </el-tab-pane>
+                        <!-- <el-tab-pane label="调试" name="test">调试</el-tab-pane>
+                        <el-tab-pane label="Open" name="open">Open</el-tab-pane> -->
+                    </el-tabs>
+                </div>
+            </el-col>
+        </el-row>
+    </div>
+    <!-- import Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- import Element Plus -->
+    <script src="https://unpkg.com/element-plus@latest/dist/index.full.js"></script>
+    <!-- import Element Plus Icons -->
+    <script src="https://unpkg.com/@element-plus/icons-vue@latest/dist/index.iife.js"></script>
+    <script>
+        const App = {
+            data() {
+                return {
+                    message: "Hello Element Plus11",
+                    menu: [
+                        {
+                            name: "上报数据-web对接接口",
+                            index: "1",
+                            children: [
+                                { title: "上报活动数据", index: "1-1", type: 'POST', name: 'event' },
+                                { title: "上报活动统计数据", index: "1-2", type: 'POST', name: 'eventStatisticsData' },
+                                { title: "上报活动大屏数据", index: "1-3", type: 'POST', name: 'screenData' }
+                            ],
+                            disabled: false,
+                        },
+                    ],
+                    activeApi: "event",
+                    activeTab: 'doc',
+                    apiData: {
+                        event: {
+                            name: "上报活动数据",
+                            method: "POST",
+                            url: "/meps/api/data-report/event",
+                            requestDataType: "application/x-www-form-urlencoded",
+                            responseDataType: "*/*",
+                            parameters: [{
+                                name: 'token',
+                                info: '用户口令',
+                                method: 'header',
+                                isRequired: 'false',
+                                type: 'string',
+                                schema: '',
+                            }],
+                            responseStatus: [
+                                { code: 200, description: 'OK', schema: 'Result«List«MOC-上报活动信息»»' },
+                                { code: 201, description: 'Created', schema: '' },
+                                { code: 401, description: 'Unauthorized', schema: '' },
+                                { code: 403, description: 'Forbidden', schema: '' },
+                                { code: 404, description: 'Not Found', schema: '' }
+                            ],
+                            responseParameters: [{
+                                name: 'code',
+                                info: '',
+                                type: 'integer(int32)',
+                                schema: 'integer(int32)'
+                            },
+                            {
+                                name: 'data',
+                                info: '',
+                                type: 'array',
+                                schema: '',
+                                children: [
+                                    {
+                                        name: 'endTime',
+                                        info: '赛事结束时间',
+                                        type: 'string(date-time)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'eventId',
+                                        info: 'id',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'eventTypeName',
+                                        info: '活动类型',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'name',
+                                        info: '活动名称',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'sponsor',
+                                        info: '赛事举办方',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'startTime',
+                                        info: '赛事开始时间',
+                                        type: 'string(date-time)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'status',
+                                        info: '活动状态',
+                                        type: 'integer(int32)',
+                                        schema: ''
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'msg',
+                                info: '',
+                                type: 'string',
+                                schema: ''
+                            }],
+                            responseExample: `{
+                                "code": 0,
+                                "data": [
+                                    {
+                                        "endTime": "",
+                                        "eventId": 0,
+                                        "eventTypeName": "",
+                                        "name": "",
+                                        "sponsor": "",
+                                        "startTime": "",
+                                        "status": 0
+                                    }
+                                ],
+                                "msg": ""
+                            }`
+                        },
+                        eventStatisticsData: {
+                            name: "上报活动统计数据",
+                            method: "POST",
+                            url: "/meps/api/data-report/event-statistics-data",
+                            requestDataType: "application/x-www-form-urlencoded",
+                            responseDataType: "*/*",
+                            parameters: [{
+                                name: 'token',
+                                info: '用户口令',
+                                method: 'header',
+                                isRequired: 'false',
+                                type: 'string',
+                                schema: '',
+                            }],
+                            responseStatus: [
+                                { code: 200, description: 'OK', schema: 'Result«List«MOC-上报活动统计信息»»' },
+                                { code: 201, description: 'Created', schema: '' },
+                                { code: 401, description: 'Unauthorized', schema: '' },
+                                { code: 403, description: 'Forbidden', schema: '' },
+                                { code: 404, description: 'Not Found', schema: '' }
+                            ],
+                            responseParameters: [{
+                                name: 'code',
+                                info: '',
+                                type: 'integer(int32)',
+                                schema: 'integer(int32)'
+                            },
+                            {
+                                name: 'data',
+                                info: '',
+                                type: 'MOC-上报活动统计信息',
+                                schema: 'MOC-上报活动统计信息',
+                                children: [
+                                    {
+                                        name: 'endTime',
+                                        info: '赛事结束时间',
+                                        type: 'string(date-time)',
+                                        schema: ''
+
+                                    },
+                                    {
+                                        name: 'medicalPeopleNum',
+                                        info: '医务人员	',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'medicalPointNum',
+                                        info: '医疗站点数	',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'vehicleNum',
+                                        info: '车辆数',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'volunteerNum',
+                                        info: '志愿者人员',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'watchingPeopleNum',
+                                        info: '网络急救员	',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                ]
+                            },
+                            {
+                                name: 'msg',
+                                info: '',
+                                type: 'string',
+                                schema: ''
+                            }],
+                            responseExample: `{
+                                "code": 0,
+                                "data": {
+                                    "hosiptalPeopleNum": 0,
+                                    "medicalPeopleNum": 0,
+                                    "medicalPointNum": 0,
+                                    "vehicleNum": 0,
+                                    "volunteerNum": 0,
+                                    "watchingPeopleNum": 0
+                                },
+                                "msg": ""
+                            }`
+                        },
+                        screenData: {
+                            name: "上报活动大屏数据",
+                            method: "POST",
+                            url: "/meps/api/data-report/screenData",
+                            requestDataType: "application/x-www-form-urlencoded",
+                            responseDataType: "*/*",
+                            parameters: [{
+                                name: 'token',
+                                info: '用户口令',
+                                method: 'header',
+                                isRequired: 'false',
+                                type: 'string',
+                                schema: '',
+                            }],
+                            responseStatus: [
+                                { code: 200, description: 'OK', schema: 'Result«MOC-上报活动大屏信息»' },
+                                { code: 201, description: 'Created', schema: '' },
+                                { code: 401, description: 'Unauthorized', schema: '' },
+                                { code: 403, description: 'Forbidden', schema: '' },
+                                { code: 404, description: 'Not Found', schema: '' }
+                            ],
+                            responseParameters: [{
+                                name: 'code',
+                                info: '',
+                                type: 'integer(int32)',
+                                schema: 'integer(int32)',
+                                id: '0'
+                            },
+                            {
+                                name: 'data',
+                                info: '',
+                                type: 'MOC-上报活动大屏信息',
+                                schema: 'MOC-上报活动大屏信息',
+                                children: [
+                                    {
+                                        name: 'emergencyDataList',
+                                        info: '',
+                                        type: 'array',
+                                        schema: '数据驾驶舱相关数据«突发事件统计数据VO»',
+                                        children: [{
+                                            name: 'data',
+                                            info: '数据',
+                                            type: '突发事件统计数据VO',
+                                            schema: '突发事件统计数据VO',
+                                            children: []
+                                        },
+                                        {
+                                            name: 'data',
+                                            info: '数据',
+                                            type: '突发事件统计数据VO',
+                                            schema: '突发事件统计数据VO',
+                                            children: []
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        name: 'eventId',
+                                        info: 'id',
+                                        type: 'integer(int64)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'eventTypeName',
+                                        info: '活动类型',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'name',
+                                        info: '活动名称',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'sponsor',
+                                        info: '赛事举办方',
+                                        type: 'string',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'startTime',
+                                        info: '赛事开始时间',
+                                        type: 'string(date-time)',
+                                        schema: ''
+                                    },
+                                    {
+                                        name: 'status',
+                                        info: '活动状态',
+                                        type: 'integer(int32)',
+                                        schema: ''
+                                    }
+                                ],
+                                id: '0'
+                            },
+                            {
+                                name: 'msg',
+                                info: '',
+                                type: 'string',
+                                schema: ''
+                            }],
+                            responseExample: `{
+                                "code": 0,
+                                "data": [
+                                    {
+                                        "endTime": "",
+                                        "eventId": 0,
+                                        "eventTypeName": "",
+                                        "name": "",
+                                        "sponsor": "",
+                                        "startTime": "",
+                                        "status": 0
+                                    }
+                                ],
+                                "msg": ""
+                            }`
+                        },
+                    },
+                    activeApiData: {},
+                };
+            },
+            methods: {
+                handleOpen(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                handleClose(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                selectApi(item) {
+                    console.log(item);
+                    this.activeApi = item.name;
+                    this.activeApiData = this.apiData[item.name];
+                }
+            },
+            mounted() {
+                this.activeApiData = this.apiData[this.activeApi];
+                console.log('activeApiData:', this.activeApiData);
+                console.log('tableData:', this.tableData);
+            },
+        };
+        const app = Vue.createApp(App);
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component)
+        }
+        app.use(ElementPlus);
+        app.mount("#app");
+    </script>
+</body>
+
+</html>
