@@ -1,625 +1,798 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!-- import CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/element-plus@latest/dist/index.css" />
-    <title>Element Plus demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>强中强AI业绩生成器</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            font-size: 16px;
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
         }
 
-        #app {
-            height: 100%;
-            /* width: 30%; */
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .tac {
-            height: calc(100% - 120px);
+        /* 选中状态的样式类 (JS控制) */
+        .btn-selected {
+            background-color: #ea580c !important; /* orange-600 */
+            border-color: #f97316 !important; /* orange-500 */
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+        }
+        
+        /* 痛点选中样式 */
+        .pain-point-selected {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            color: #fee2e2 !important;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
         }
 
-        .title {
-            height: 30px;
-        }
-
-        .title::before {
-            content: " ";
-            display: inline-block;
-            position: relative;
-            top: 4px;
-            width: 4px;
-            height: 20px;
-            background: #00ab6d;
-            line-height: 1em;
-            margin-right: 8px;
-        }
-
-        .el-menu-vertical-demo {
-            height: 100%;
-            color: #ffffffa6;
-        }
-
-        .menu-title {
-            background-color: #545c64;
-            color: #ffffff;
-            height: 60px;
-            line-height: 60px;
-            text-align: center;
-            border-right: 1px solid var(--el-menu-border-color);
-        }
-
-        .layout_header {
-            height: 60px;
-            padding: 0 12px 0 0;
-            background: #fff;
-            -webkit-box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
-            box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
-            display: flex;
-            align-items: center;
-            font-size: 20px;
-            font-weight: 400;
-            color: #2c3e50;
-        }
-
-        .main_content {
-            height: calc(100% - 120px);
-        }
-
-        .demo-tabs>.el-tabs__content {
-            padding: 32px;
-            color: #6b778c;
-            font-size: 32px;
-            font-weight: 600;
-        }
-
-        .el-tabs--right .el-tabs__content,
-        .el-tabs--left .el-tabs__content {
-            height: 100%;
-        }
-
-        .api-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: space-around;
-        }
-
-        .api-info-title {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: start;
-            width: 100%;
-            border-color: #49cc90;
-            background: rgba(73, 204, 144, .1);
-            margin: 10px 0;
-        }
-
-        .api-info-title-type {
-            font-size: 14px;
-            font-weight: 700;
-            min-width: 80px;
-            padding: 6px 15px;
-            text-align: center;
-            border-radius: 3px;
-            text-shadow: 0 1px 0 rgba(0, 0, 0, .1);
-            font-family: Titillium Web, sans-serif;
-            color: #fff;
-            background: #49cc90;
-        }
-
-        .api-info-title-url {
-            font-size: 14px;
-            display: -webkit-box;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-flex: 0;
-            -ms-flex: 0 3 auto;
-            flex: 0 3 auto;
-            -webkit-box-align: center;
-            -ms-flex-align: center;
-            align-items: center;
-            word-break: break-all;
-            padding: 0 32px;
-        }
-
-        .api-info-data {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .api-info-data-api {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-start;
-            width: 50%;
-        }
-
-        .api-info-data-api-title {
-            width: 25%;
-        }
-
-        .api-info-request {
-            margin: 10px 0;
-            width: 100%;
+        body {
+            background-color: #0f172a; /* slate-900 */
+            color: #f1f5f9; /* slate-100 */
+            font-family: system-ui, -apple-system, sans-serif;
         }
     </style>
 </head>
+<body class="selection:bg-orange-500 selection:text-white min-h-screen">
 
-<body>
-    <div id="app">
-        <el-row class="tac">
-            <el-col :span="3">
-                <div class="menu-title">
-                    接口列表
-                </div>
-                <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
-                    :default-active="1" text-color="#fff" @open="handleOpen" @close="handleClose">
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- 使用您上传的图片 -->
+                <img src="https://file.rendit.io/n/sF0QvGjW1s9xQ0jK6w8z.jpg" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                <h1 class="text-xl font-bold tracking-tight text-white">强中强AI业绩生成器</h1>
+            </div>
+            <div class="text-xs font-medium bg-slate-700 px-3 py-1 rounded-full text-slate-300">
+                AI 驱动 · 结果导向
+            </div>
+        </div>
+    </header>
 
-                    <el-sub-menu index="1" v-for="(item, index) in menu" :key="index">
-                        <template #title>
-                            <el-icon>
-                                <HomeFilled />
-                            </el-icon>
-                            <span>{{ item.name }}</span>
-                        </template>
-                        <el-menu-item-group v-if="item.children && item.children.length">
-                            <el-menu-item v-for="itm in item.children" :key="itm.index" :index="itm.index"
-                                @click="selectApi(itm)">
-                                <span style="margin-right: 30px;">{{ itm.type }}</span>
-                                <span>{{ itm.title }}</span>
-                            </el-menu-item>
-                        </el-menu-item-group>
-                    </el-sub-menu>
-                </el-menu>
-            </el-col>
-            <el-col :span="21">
-                <div class="layout_header">
-                    <el-icon>
-                        <HomeFilled />
-                    </el-icon>
-                    <span>重大活动保障平台</span>
-                </div>
-                <div class="main_content">
-                    <el-tabs tab-position="left" class="demo-tabs" v-model="activeTab">
-                        <el-tab-pane label="文档" name="doc">
-                            <div>{{activeApiData.name}}</div>
-                            <div class="api-info">
-                                <div class="api-info-title">
-                                    <div class="api-info-title-type">{{activeApiData.method}}</div>
-                                    <div class="api-info-title-url">{{activeApiData.url}}</div>
-                                </div>
-                                <div class="api-info-data">
-                                    <div class="api-info-data-api">
-                                        <div class="api-info-data-api-title">请求数据类型</div>
-                                        <div>{{activeApiData.requestDataType}}</div>
-                                    </div>
-                                    <div class="api-info-data-response api-info-data-api">
-                                        <div class="api-info-data-api-title">响应数据类型</div>
-                                        <div>{{activeApiData.responseDataType}}</div>
-                                    </div>
-                                </div>
-                                <div class="api-info-request">
-                                    <div class="title">请求参数</div>
-                                    <el-table :data="activeApiData.parameters" style="width: 100%;" fit border stripe>
-                                        <el-table-column prop="name" label="参数名称" min-width="150"></el-table-column>
-                                        <el-table-column prop="info" label="参数说明" min-width="200"></el-table-column>
-                                        <el-table-column prop="method" label="请求类型" min-width="120">
-                                            <template #default="scope">
-                                                <span style="color: #fca130;">{{ scope.row.method }}</span>
-                                            </template>
-                                        </el-table-column>
-                                        <el-table-column prop="isRequired" label="是否必须"
-                                            min-width="100"></el-table-column>
-                                        <el-table-column prop="type" label="数据类型" min-width="120"></el-table-column>
-                                        <el-table-column prop="schema" label="schema"></el-table-column>
-                                    </el-table>
-                                </div>
-                                <div class="api-info-request">
-                                    <div class="title">响应状态</div>
-                                    <el-table :data="activeApiData.responseStatus" style="width: 100%;" fit border
-                                        stripe>
-                                        <el-table-column prop="code" label="状态码" min-width="150"></el-table-column>
-                                        <el-table-column prop="description" label="说明"
-                                            min-width="200"></el-table-column>
-                                        <el-table-column prop="schema" label="schema"></el-table-column>
-                                    </el-table>
-                                </div>
-                                <div class="api-info-request">
-                                    <div class="title">响应参数</div>
-                                    <el-table :data="activeApiData.responseParameters" row-key="name" default-expand-all
-                                        border fit stripe>
-                                        <el-table-column prop="name" label="参数名称"></el-table-column>
-                                        <el-table-column prop="info" label="参数说明"></el-table-column>
-                                        <el-table-column prop="type" label="类型"></el-table-column>
-                                        <el-table-column prop="schema" label="schema"></el-table-column>
-                                    </el-table>
-                                </div>
-                                <div>
-                                    <div class="title">响应示例</div>
-                                    <el-text>
-                                        {{ activeApiData.responseExample}}
-                                    </el-text>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Panel: Inputs -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
+                    <h2 class="text-lg font-semibold text-white mb-6 flex items-center">
+                        <i class="fas fa-store w-5 h-5 mr-2 text-orange-500"></i>
+                        门店基础信息
+                    </h2>
+
+                    <div class="space-y-5">
+                        <!-- 馆名与电话 -->
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                    <i class="fas fa-building w-4 h-4 mr-1 text-slate-500"></i> 瑜伽馆名称
+                                </label>
+                                <input type="text" id="studioName" placeholder="例如：强中强瑜伽" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                    <i class="fas fa-phone w-4 h-4 mr-1 text-slate-500"></i> 联系电话
+                                </label>
+                                <input type="tel" id="phoneNumber" placeholder="老板电话" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all text-sm">
+                            </div>
+                        </div>
+
+                        <!-- 地区选择 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                <i class="fas fa-map-marker-alt w-4 h-4 mr-1 text-slate-500"></i> 所在地区
+                            </label>
+                            <div class="grid grid-cols-1 gap-2">
+                                <select id="provinceSelect" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white text-sm"></select>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <select id="citySelect" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white text-sm"></select>
+                                    <select id="districtSelect" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white text-sm"></select>
                                 </div>
                             </div>
-                        </el-tab-pane>
-                        <!-- <el-tab-pane label="调试" name="test">调试</el-tab-pane>
-                        <el-tab-pane label="Open" name="open">Open</el-tab-pane> -->
-                    </el-tabs>
-                </div>
-            </el-col>
-        </el-row>
-    </div>
-    <!-- import Vue 3 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- import Element Plus -->
-    <script src="https://unpkg.com/element-plus@latest/dist/index.full.js"></script>
-    <!-- import Element Plus Icons -->
-    <script src="https://unpkg.com/@element-plus/icons-vue@latest/dist/index.iife.js"></script>
-    <script>
-        const App = {
-            data() {
-                return {
-                    message: "Hello Element Plus11",
-                    menu: [
-                        {
-                            name: "上报数据-web对接接口",
-                            index: "1",
-                            children: [
-                                { title: "上报活动数据", index: "1-1", type: 'POST', name: 'event' },
-                                { title: "上报活动统计数据", index: "1-2", type: 'POST', name: 'eventStatisticsData' },
-                                { title: "上报活动大屏数据", index: "1-3", type: 'POST', name: 'screenData' }
-                            ],
-                            disabled: false,
-                        },
-                    ],
-                    activeApi: "event",
-                    activeTab: 'doc',
-                    apiData: {
-                        event: {
-                            name: "上报活动数据",
-                            method: "POST",
-                            url: "/meps/api/data-report/event",
-                            requestDataType: "application/x-www-form-urlencoded",
-                            responseDataType: "*/*",
-                            parameters: [{
-                                name: 'token',
-                                info: '用户口令',
-                                method: 'header',
-                                isRequired: 'false',
-                                type: 'string',
-                                schema: '',
-                            }],
-                            responseStatus: [
-                                { code: 200, description: 'OK', schema: 'Result«List«MOC-上报活动信息»»' },
-                                { code: 201, description: 'Created', schema: '' },
-                                { code: 401, description: 'Unauthorized', schema: '' },
-                                { code: 403, description: 'Forbidden', schema: '' },
-                                { code: 404, description: 'Not Found', schema: '' }
-                            ],
-                            responseParameters: [{
-                                name: 'code',
-                                info: '',
-                                type: 'integer(int32)',
-                                schema: 'integer(int32)'
-                            },
-                            {
-                                name: 'data',
-                                info: '',
-                                type: 'array',
-                                schema: '',
-                                children: [
-                                    {
-                                        name: 'endTime',
-                                        info: '赛事结束时间',
-                                        type: 'string(date-time)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'eventId',
-                                        info: 'id',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'eventTypeName',
-                                        info: '活动类型',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'name',
-                                        info: '活动名称',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'sponsor',
-                                        info: '赛事举办方',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'startTime',
-                                        info: '赛事开始时间',
-                                        type: 'string(date-time)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'status',
-                                        info: '活动状态',
-                                        type: 'integer(int32)',
-                                        schema: ''
-                                    }
-                                ]
-                            },
-                            {
-                                name: 'msg',
-                                info: '',
-                                type: 'string',
-                                schema: ''
-                            }],
-                            responseExample: `{
-                                "code": 0,
-                                "data": [
-                                    {
-                                        "endTime": "",
-                                        "eventId": 0,
-                                        "eventTypeName": "",
-                                        "name": "",
-                                        "sponsor": "",
-                                        "startTime": "",
-                                        "status": 0
-                                    }
-                                ],
-                                "msg": ""
-                            }`
-                        },
-                        eventStatisticsData: {
-                            name: "上报活动统计数据",
-                            method: "POST",
-                            url: "/meps/api/data-report/event-statistics-data",
-                            requestDataType: "application/x-www-form-urlencoded",
-                            responseDataType: "*/*",
-                            parameters: [{
-                                name: 'token',
-                                info: '用户口令',
-                                method: 'header',
-                                isRequired: 'false',
-                                type: 'string',
-                                schema: '',
-                            }],
-                            responseStatus: [
-                                { code: 200, description: 'OK', schema: 'Result«List«MOC-上报活动统计信息»»' },
-                                { code: 201, description: 'Created', schema: '' },
-                                { code: 401, description: 'Unauthorized', schema: '' },
-                                { code: 403, description: 'Forbidden', schema: '' },
-                                { code: 404, description: 'Not Found', schema: '' }
-                            ],
-                            responseParameters: [{
-                                name: 'code',
-                                info: '',
-                                type: 'integer(int32)',
-                                schema: 'integer(int32)'
-                            },
-                            {
-                                name: 'data',
-                                info: '',
-                                type: 'MOC-上报活动统计信息',
-                                schema: 'MOC-上报活动统计信息',
-                                children: [
-                                    {
-                                        name: 'endTime',
-                                        info: '赛事结束时间',
-                                        type: 'string(date-time)',
-                                        schema: ''
+                        </div>
 
-                                    },
-                                    {
-                                        name: 'medicalPeopleNum',
-                                        info: '医务人员	',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'medicalPointNum',
-                                        info: '医疗站点数	',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'vehicleNum',
-                                        info: '车辆数',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'volunteerNum',
-                                        info: '志愿者人员',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'watchingPeopleNum',
-                                        info: '网络急救员	',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                ]
-                            },
-                            {
-                                name: 'msg',
-                                info: '',
-                                type: 'string',
-                                schema: ''
-                            }],
-                            responseExample: `{
-                                "code": 0,
-                                "data": {
-                                    "hosiptalPeopleNum": 0,
-                                    "medicalPeopleNum": 0,
-                                    "medicalPointNum": 0,
-                                    "vehicleNum": 0,
-                                    "volunteerNum": 0,
-                                    "watchingPeopleNum": 0
-                                },
-                                "msg": ""
-                            }`
-                        },
-                        screenData: {
-                            name: "上报活动大屏数据",
-                            method: "POST",
-                            url: "/meps/api/data-report/screenData",
-                            requestDataType: "application/x-www-form-urlencoded",
-                            responseDataType: "*/*",
-                            parameters: [{
-                                name: 'token',
-                                info: '用户口令',
-                                method: 'header',
-                                isRequired: 'false',
-                                type: 'string',
-                                schema: '',
-                            }],
-                            responseStatus: [
-                                { code: 200, description: 'OK', schema: 'Result«MOC-上报活动大屏信息»' },
-                                { code: 201, description: 'Created', schema: '' },
-                                { code: 401, description: 'Unauthorized', schema: '' },
-                                { code: 403, description: 'Forbidden', schema: '' },
-                                { code: 404, description: 'Not Found', schema: '' }
-                            ],
-                            responseParameters: [{
-                                name: 'code',
-                                info: '',
-                                type: 'integer(int32)',
-                                schema: 'integer(int32)',
-                                id: '0'
-                            },
-                            {
-                                name: 'data',
-                                info: '',
-                                type: 'MOC-上报活动大屏信息',
-                                schema: 'MOC-上报活动大屏信息',
-                                children: [
-                                    {
-                                        name: 'emergencyDataList',
-                                        info: '',
-                                        type: 'array',
-                                        schema: '数据驾驶舱相关数据«突发事件统计数据VO»',
-                                        children: [{
-                                            name: 'data',
-                                            info: '数据',
-                                            type: '突发事件统计数据VO',
-                                            schema: '突发事件统计数据VO',
-                                            children: []
-                                        },
-                                        {
-                                            name: 'data',
-                                            info: '数据',
-                                            type: '突发事件统计数据VO',
-                                            schema: '突发事件统计数据VO',
-                                            children: []
-                                        }
-                                        ]
-                                    },
-                                    {
-                                        name: 'eventId',
-                                        info: 'id',
-                                        type: 'integer(int64)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'eventTypeName',
-                                        info: '活动类型',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'name',
-                                        info: '活动名称',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'sponsor',
-                                        info: '赛事举办方',
-                                        type: 'string',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'startTime',
-                                        info: '赛事开始时间',
-                                        type: 'string(date-time)',
-                                        schema: ''
-                                    },
-                                    {
-                                        name: 'status',
-                                        info: '活动状态',
-                                        type: 'integer(int32)',
-                                        schema: ''
-                                    }
-                                ],
-                                id: '0'
-                            },
-                            {
-                                name: 'msg',
-                                info: '',
-                                type: 'string',
-                                schema: ''
-                            }],
-                            responseExample: `{
-                                "code": 0,
-                                "data": [
-                                    {
-                                        "endTime": "",
-                                        "eventId": 0,
-                                        "eventTypeName": "",
-                                        "name": "",
-                                        "sponsor": "",
-                                        "startTime": "",
-                                        "status": 0
-                                    }
-                                ],
-                                "msg": ""
-                            }`
-                        },
-                    },
-                    activeApiData: {},
-                };
+                        <!-- 门店类型 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">门店类型</label>
+                            <div class="grid grid-cols-4 gap-2" id="storeTypeContainer">
+                                <!-- Buttons generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- 会员种类 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                <i class="fas fa-dumbbell w-4 h-4 mr-2 text-slate-500"></i> 会员种类 (人)
+                            </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-slate-500 mb-1">团课</div>
+                                    <input type="number" id="memGroup" value="100" class="w-full bg-slate-800 border-slate-600 rounded px-1 py-1 text-center text-sm text-white">
+                                </div>
+                                <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-blue-400 mb-1">小班课</div>
+                                    <input type="number" id="memSmall" value="40" class="w-full bg-slate-800 border-slate-600 rounded px-1 py-1 text-center text-sm text-white">
+                                </div>
+                                <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-orange-400 mb-1">私教</div>
+                                    <input type="number" id="memPrivate" value="20" class="w-full bg-slate-800 border-slate-600 rounded px-1 py-1 text-center text-sm text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 业绩目标 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2">本月业绩目标 (元)</label>
+                            <div class="relative">
+                                <i class="fas fa-bullseye absolute left-3 top-2.5 w-5 h-5 text-slate-500"></i>
+                                <input type="number" id="targetRevenue" value="100000" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 pl-10 pr-4 text-white font-mono">
+                            </div>
+                        </div>
+
+                        <!-- 价格区间 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                <i class="fas fa-credit-card w-4 h-4 mr-2 text-slate-500"></i> 主要成交卡项价格区间
+                            </label>
+                            <div class="relative">
+                                <select id="priceRange" class="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-3 text-white text-sm appearance-none">
+                                    <option value="low">2000元以内</option>
+                                    <option value="mid" selected>2000-5000元</option>
+                                    <option value="high">5000-10000元</option>
+                                    <option value="vip">10000元以上</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-3 text-slate-500 pointer-events-none text-xs"></i>
+                            </div>
+                        </div>
+
+                        <!-- 痛点选择 -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-400 mb-2 flex items-center">
+                                <i class="fas fa-exclamation-triangle w-4 h-4 mr-2 text-red-500"></i> 目前最大痛点 (可多选)
+                            </label>
+                            <div class="grid grid-cols-2 gap-2" id="painPointsContainer">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- 生成按钮 -->
+                        <button id="generateBtn" class="w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg flex items-center justify-center transition-all bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 active:scale-95">
+                            <i class="fas fa-sparkles w-5 h-5 mr-2"></i> 一键生成赚钱方案
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div class="lg:col-span-8 space-y-6" id="outputSection">
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="h-full min-h-[400px] flex flex-col items-center justify-center bg-slate-800/50 border border-dashed border-slate-700 rounded-2xl p-8 text-center">
+                    <div class="bg-slate-800 p-4 rounded-full mb-4">
+                        <i class="fas fa-calculator text-4xl text-slate-600"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-slate-300 mb-2">等待数据输入</h3>
+                    <p class="text-slate-500 max-w-sm">请在左侧输入您的门店情况，强中强智能大脑将为您生成全套落地执行方案。</p>
+                </div>
+
+                <!-- Generated Content (Hidden by default) -->
+                <div id="generatedContent" class="space-y-6 hidden">
+                    
+                    <!-- 1. Strategy Card -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl fade-in">
+                        <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-orange-500 flex items-center">
+                                <span class="bg-orange-500/10 p-1.5 rounded mr-2">🎯</span> 活动顶层设计
+                            </h3>
+                            <div class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700" id="strategyLocation"></div>
+                        </div>
+                        <div class="p-6">
+                            <div class="mb-4">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Activity Theme</span>
+                                <h4 class="text-2xl font-bold text-white mt-1" id="strategyTheme"></h4>
+                            </div>
+                            <div class="bg-slate-700/30 p-4 rounded-xl border border-slate-700">
+                                <span class="text-xs font-bold text-orange-400 uppercase tracking-wider block mb-2">底层逻辑</span>
+                                <p class="text-slate-300 leading-relaxed" id="strategyLogic"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Card Matrix (Table) -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl fade-in">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-check-circle w-5 h-5 mr-2 text-blue-500"></i> 推荐卡项设计 (AI 定制)
+                        </h3>
+                        <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-6 text-xs text-blue-200 leading-relaxed whitespace-pre-wrap">
+                            <span class="font-bold text-blue-400">💡 设计思路：</span><span id="cardDesignLogic"></span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="border-b border-slate-700 text-slate-400 text-xs font-bold uppercase">
+                                        <th class="p-3">卡类型</th>
+                                        <th class="p-3">卡名示例</th>
+                                        <th class="p-3">内容配置</th>
+                                        <th class="p-3">建议售价区间</th>
+                                        <th class="p-3">单节折算(参考)</th>
+                                        <th class="p-3">适用客户</th>
+                                        <th class="p-3">定位说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-700" id="cardTableBody">
+                                    <!-- JS render -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Revenue Funnel -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl relative overflow-hidden group fade-in">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <i class="fas fa-calculator text-8xl text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-6 flex items-center">
+                            <i class="fas fa-filter w-5 h-5 mr-2 text-green-500"></i> 业绩反推漏斗
+                        </h3>
+                        <div class="flex items-center justify-between text-center mb-6 text-sm relative z-10 flex-wrap gap-2">
+                            <div class="flex-1 min-w-[100px]">
+                                <div class="text-slate-400 mb-1">所需进店流量</div>
+                                <div class="text-xl font-bold text-blue-400"><span id="mathLeads"></span><span class="text-xs text-slate-500 ml-1">人</span></div>
+                            </div>
+                            <div class="text-slate-600 font-bold text-lg">×</div>
+                            <div class="flex-1 min-w-[100px]">
+                                <div class="text-slate-400 mb-1">平均客单价</div>
+                                <div class="text-xl font-bold text-orange-400" id="mathTicket"></div>
+                            </div>
+                            <div class="text-slate-600 font-bold text-lg">×</div>
+                            <div class="flex-1 min-w-[100px]">
+                                <div class="text-slate-400 mb-1">预估购买率</div>
+                                <div class="text-xl font-bold text-purple-400" id="mathRate"></div>
+                            </div>
+                            <div class="text-slate-600 font-bold text-lg">=</div>
+                            <div class="flex-1 min-w-[120px] bg-slate-700/50 rounded-lg py-2 border border-slate-600">
+                                <div class="text-slate-300 mb-1">目标业绩</div>
+                                <div class="text-xl font-bold text-white" id="mathTarget"></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded-lg text-xs text-slate-400 whitespace-pre-line" id="mathComment"></div>
+                    </div>
+
+                    <!-- 4. Content Calendar -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl fade-in">
+                        <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-green-500 flex items-center">
+                                <i class="fas fa-share-alt w-5 h-5 mr-2"></i> 全域流量日历 (每日更新)
+                            </h3>
+                            <div class="flex items-center space-x-2 bg-slate-800 rounded-lg p-1 border border-slate-600">
+                                <button onclick="changeDate(-1)" class="p-1 hover:bg-slate-700 rounded text-slate-400"><i class="fas fa-chevron-left"></i></button>
+                                <div class="flex items-center px-2 text-sm font-mono text-white min-w-[100px] justify-center">
+                                    <i class="far fa-calendar-alt w-3 h-3 mr-2 text-green-500"></i>
+                                    <span id="calendarDateDisplay"></span>
+                                </div>
+                                <button onclick="changeDate(1)" class="p-1 hover:bg-slate-700 rounded text-slate-400"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="p-6 space-y-8">
+                            <!-- WeChat -->
+                            <div>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                        <i class="fab fa-weixin w-4 h-4 mr-2"></i> 朋友圈跟单 (3条/日)
+                                    </h4>
+                                    <span class="text-xs px-2 py-1 bg-slate-700 rounded text-orange-300" id="dailyVibeTag"></span>
+                                </div>
+                                <div class="space-y-6" id="momentsContainer">
+                                    <!-- Generated Moments -->
+                                </div>
+                            </div>
+
+                            <!-- Douyin -->
+                            <div class="pt-6 border-t border-slate-700">
+                                <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider flex items-center">
+                                    <i class="fab fa-tiktok w-4 h-4 mr-2"></i> 抖音短视频 (1条/日)
+                                </h4>
+                                <div class="bg-slate-900 rounded-xl border border-slate-700 p-5 relative">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <span class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded font-bold mb-2">今日推荐</span>
+                                            <h5 class="text-lg font-bold text-white" id="douyinTitle"></h5>
+                                        </div>
+                                        <button onclick="copyText('douyinContent')" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"><i class="fas fa-copy"></i></button>
+                                    </div>
+                                    <div class="bg-slate-800/50 p-4 rounded-lg mb-4 text-sm text-slate-300 whitespace-pre-line border border-slate-700/50" id="douyinContent"></div>
+                                    <div class="mb-4 flex items-center text-xs text-slate-400 bg-slate-800 px-3 py-2 rounded border border-slate-700">
+                                        <i class="fas fa-music w-3 h-3 mr-2 text-purple-400"></i> 推荐BGM：<span class="text-purple-300 ml-1" id="douyinBgm"></span>
+                                    </div>
+                                    <div class="space-y-2" id="douyinScript">
+                                        <!-- Script Lines -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Xiaohongshu -->
+                            <div class="pt-6 border-t border-slate-700">
+                                <h4 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider flex items-center">
+                                    <i class="fas fa-camera w-4 h-4 mr-2"></i> 小红书笔记 (1条/日)
+                                </h4>
+                                <div class="bg-slate-900 rounded-xl border border-slate-700 p-5 relative">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded font-bold mb-2">爆款笔记</span>
+                                            <h5 class="text-lg font-bold text-white" id="xhsTitle"></h5>
+                                        </div>
+                                        <button onclick="copyText('xhsContent')" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"><i class="fas fa-copy"></i></button>
+                                    </div>
+                                    <div class="bg-slate-800/50 p-4 rounded-lg mb-4 text-sm text-slate-300 whitespace-pre-line border border-slate-700/50" id="xhsContent"></div>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="xhsImages">
+                                        <!-- Images -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Private Scripts -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl fade-in">
+                        <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700">
+                            <h3 class="text-lg font-bold text-purple-500 flex items-center"><i class="fas fa-comments w-5 h-5 mr-2"></i> 私域精准话术 (四类客群)</h3>
+                        </div>
+                        <div class="divide-y divide-slate-700" id="privateScriptsContainer">
+                            <!-- Scripts -->
+                        </div>
+                    </div>
+
+                    <!-- 6. AI Chat -->
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl fade-in">
+                        <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-blue-400 flex items-center"><i class="fas fa-robot w-5 h-5 mr-2"></i> 强中强·AI 运营顾问</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex flex-wrap gap-2 mb-4" id="presetQuestions">
+                                <!-- Preset Questions -->
+                            </div>
+                            
+                            <div id="aiResponseContainer" class="mb-4 bg-slate-700/50 rounded-lg p-4 border border-slate-600 hidden">
+                                <div class="flex items-start mb-2">
+                                    <div class="bg-blue-500/20 p-1 rounded mr-2"><i class="fas fa-magic w-4 h-4 text-blue-400"></i></div>
+                                    <span class="text-sm font-bold text-blue-100">AI 建议方案：</span>
+                                </div>
+                                <div class="text-sm text-slate-300 font-mono whitespace-pre-line pl-8 leading-relaxed" id="aiResponseText"></div>
+                            </div>
+
+                            <div class="relative">
+                                <textarea id="qaInput" placeholder="在此输入您的经营难题（例如：最近体验课转化率很低怎么办？）..." class="w-full bg-slate-900 border border-slate-600 rounded-xl py-3 pl-4 pr-12 text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none h-24 text-sm"></textarea>
+                                <button onclick="handleAskAI()" id="qaBtn" class="absolute bottom-3 right-3 p-2 rounded-lg transition-colors bg-blue-600 hover:bg-blue-500 text-white shadow-lg">
+                                    <i class="fas fa-paper-plane w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Data Sources ---
+        const CHINA_REGIONS = {
+            "北京市": { "北京市": ["朝阳区", "海淀区", "西城区", "东城区", "丰台区", "石景山区", "门头沟区", "房山区", "通州区", "顺义区", "昌平区", "大兴区", "怀柔区", "平谷区", "密云区", "延庆区"] },
+            "上海市": { "上海市": ["浦东新区", "黄浦区", "徐汇区", "长宁区", "静安区", "普陀区", "虹口区", "杨浦区", "闵行区", "宝山区", "嘉定区", "金山区", "松江区", "青浦区", "奉贤区", "崇明区"] },
+            "广东省": { 
+                "深圳市": ["福田区", "罗湖区", "南山区", "盐田区", "宝安区", "龙岗区", "龙华区", "坪山区", "光明区"], 
+                "广州市": ["天河区", "越秀区", "海珠区", "荔湾区", "白云区", "黄埔区", "番禺区", "花都区", "南沙区", "从化区", "增城区"], 
+                "东莞市": ["东城街道", "南城街道", "万江街道", "莞城街道", "松山湖", "长安镇", "虎门镇", "常平镇"], 
+                "佛山市": ["禅城区", "南海区", "顺德区", "高明区", "三水区"],
+                "珠海市": ["香洲区", "斗门区", "金湾区"],
+                "惠州市": ["惠城区", "惠阳区", "博罗县", "惠东县", "龙门县"],
+                "中山市": ["石岐街道", "东区街道", "西区街道", "南区街道", "五桂山街道", "小榄镇"]
             },
-            methods: {
-                handleOpen(key, keyPath) {
-                    console.log(key, keyPath);
-                },
-                handleClose(key, keyPath) {
-                    console.log(key, keyPath);
-                },
-                selectApi(item) {
-                    console.log(item);
-                    this.activeApi = item.name;
-                    this.activeApiData = this.apiData[item.name];
-                }
-            },
-            mounted() {
-                this.activeApiData = this.apiData[this.activeApi];
-                console.log('activeApiData:', this.activeApiData);
-                console.log('tableData:', this.tableData);
-            },
+            "浙江省": { "杭州市": ["上城区", "拱墅区", "西湖区", "滨江区", "萧山区", "余杭区", "临平区", "钱塘区", "富阳区", "临安区"], "宁波市": ["海曙区", "江北区", "北仑区", "镇海区", "鄞州区", "奉化区"], "温州市": ["鹿城区", "龙湾区", "瓯海区", "洞头区"] },
+            "江苏省": { "南京市": ["玄武区", "秦淮区", "建邺区", "鼓楼区", "浦口区", "栖霞区", "雨花台区", "江宁区", "六合区", "溧水区", "高淳区"], "苏州市": ["姑苏区", "虎丘区", "吴中区", "相城区", "吴江区", "昆山市", "常熟市"] },
+            "四川省": { "成都市": ["锦江区", "青羊区", "金牛区", "武侯区", "成华区", "龙泉驿区", "青白江区", "新都区", "温江区", "双流区", "郫都区"] },
+            "湖北省": { "武汉市": ["江岸区", "江汉区", "硚口区", "汉阳区", "武昌区", "青山区", "洪山区", "东西湖区", "汉南区", "蔡甸区", "江夏区", "黄陂区", "新洲区"] },
+            "湖南省": { "长沙市": ["芙蓉区", "天心区", "岳麓区", "开福区", "雨花区", "望城区", "长沙县", "浏阳市", "宁乡市"] },
+            "山东省": { "济南市": ["历下区", "市中区", "槐荫区", "天桥区", "历城区", "长清区", "章丘区", "济阳区", "莱芜区", "钢城区"], "青岛市": ["市南区", "市北区", "黄岛区", "崂山区", "李沧区", "城阳区", "即墨区"] },
+            "福建省": { "福州市": ["鼓楼区", "台江区", "仓山区", "马尾区", "晋安区", "长乐区"], "厦门市": ["思明区", "海沧区", "湖里区", "集美区", "同安区", "翔安区"] },
+            "安徽省": { "合肥市": ["瑶海区", "庐阳区", "蜀山区", "包河区"] },
+            "陕西省": { "西安市": ["新城区", "碑林区", "莲湖区", "灞桥区", "未央区", "雁塔区", "阎良区", "临潼区", "长安区", "高陵区", "鄠邑区"] },
+            "天津市": { "天津市": ["和平区", "河东区", "河西区", "南开区", "河北区", "红桥区", "滨海新区"] },
+            "重庆市": { "重庆市": ["渝中区", "江北区", "南岸区", "九龙坡区", "沙坪坝区", "大渡口区", "北碚区", "渝北区", "巴南区"] },
+            // 省略部分冷门城市以节省空间，但逻辑兼容所有
         };
-        const app = Vue.createApp(App);
-        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-            app.component(key, component)
+
+        const STORE_TYPE_OPTIONS = [
+            { id: 'mall', label: '商场馆', desc: '高曝光' },
+            { id: 'office', label: '写字楼', desc: '白领多' },
+            { id: 'community', label: '社区店', desc: '做长期' },
+            { id: 'studio', label: '工作室', desc: '高客单' }
+        ];
+
+        const PAIN_POINTS_OPTIONS = [
+            "严重缺新客", "老客死得快", "体验转不动", "大课没人上", "私教卖不出",
+            "卡项不赚钱", "教练不会销", "美团没人理", "房租压力大", "淡季空荡荡"
+        ];
+
+        const PRESET_QA_TAGS = ["新店如何引流？", "老会员不续费？", "私教课怎么卖？", "教练团队管理？", "淡季业绩下滑？"];
+
+        const PRICE_RANGE_OPTIONS = [
+            { id: 'low', label: '2000元以内', avg: 1500 },
+            { id: 'mid', label: '2000-5000元', avg: 3500 },
+            { id: 'high', label: '5000-10000元', avg: 7500 },
+            { id: 'vip', label: '10000元以上', avg: 15000 },
+        ];
+
+        const WEEKLY_THEMES = [
+            { day: '周日', theme: '复盘与规划', mood: 'Relaxed' },
+            { day: '周一', theme: '能量唤醒', mood: 'Energetic' },
+            { day: '周二', theme: '干货知识', mood: 'Professional' },
+            { day: '周三', theme: '会员案例', mood: 'Trust' },
+            { day: '周四', theme: '情绪解压', mood: 'Healing' },
+            { day: '周五', theme: '周末预告', mood: 'Exciting' },
+            { day: '周六', theme: '生活方式', mood: 'Lifestyle' },
+        ];
+        
+        const DAILY_VIBES = [
+          { id: 1, name: "硬核干货日" },
+          { id: 2, name: "情感共鸣日" },
+          { id: 3, name: "福利轰炸日" },
+          { id: 4, name: "会员高光日" },
+          { id: 5, name: "生活美学日" },
+          { id: 6, name: "社交互动日" },
+          { id: 7, name: "教练风采日" },
+          { id: 8, name: "沉浸体验日" },
+          { id: 9, name: "痛点直击日" },
+          { id: 10, name: "轻松躺平日" },
+        ];
+
+        // --- State ---
+        let state = {
+            province: '广东省',
+            city: '深圳市',
+            district: '南山区',
+            storeType: 'mall',
+            priceRange: 'mid',
+            selectedPainPoints: [],
+            targetRevenue: 100000,
+            currentDate: new Date(),
+            memberCounts: { group: 100, small: 40, private: 20 },
+            result: null
+        };
+
+        // --- Init ---
+        function init() {
+            renderRegions();
+            renderStoreTypes();
+            renderPainPoints();
+            renderPresetQA();
+            
+            // Listeners
+            document.getElementById('provinceSelect').addEventListener('change', (e) => updateRegion(e.target.value));
+            document.getElementById('citySelect').addEventListener('change', (e) => updateCity(e.target.value));
+            document.getElementById('generateBtn').addEventListener('click', handleGenerate);
+            document.getElementById('priceRange').addEventListener('change', (e) => state.priceRange = e.target.value);
+            document.getElementById('targetRevenue').addEventListener('input', (e) => state.targetRevenue = e.target.value);
+            
+            // Init Defaults
+            updateRegion(state.province);
         }
-        app.use(ElementPlus);
-        app.mount("#app");
+
+        // --- Renders ---
+        function renderRegions() {
+            const pSelect = document.getElementById('provinceSelect');
+            pSelect.innerHTML = Object.keys(CHINA_REGIONS).map(p => `<option value="${p}">${p}</option>`).join('');
+            pSelect.value = state.province;
+        }
+
+        function updateRegion(prov) {
+            state.province = prov;
+            const cities = Object.keys(CHINA_REGIONS[prov] || {});
+            const cSelect = document.getElementById('citySelect');
+            cSelect.innerHTML = cities.map(c => `<option value="${c}">${c}</option>`).join('');
+            state.city = cities[0];
+            updateCity(cities[0]);
+        }
+
+        function updateCity(ct) {
+            state.city = ct;
+            const districts = CHINA_REGIONS[state.province][ct] || [];
+            const dSelect = document.getElementById('districtSelect');
+            dSelect.innerHTML = districts.map(d => `<option value="${d}">${d}</option>`).join('');
+            state.district = districts[0];
+        }
+
+        function renderStoreTypes() {
+            const container = document.getElementById('storeTypeContainer');
+            container.innerHTML = STORE_TYPE_OPTIONS.map(t => `
+                <button onclick="setStoreType('${t.id}')" class="store-btn flex flex-col items-center justify-center py-3 px-1 rounded-xl border transition-all relative group h-20 ${state.storeType === t.id ? 'btn-selected' : 'bg-slate-700/50 border-slate-600 text-slate-300'}">
+                    <span class="font-bold text-xs mb-1 text-center leading-tight">${t.label}</span>
+                    <span class="text-[10px] text-center transform scale-90 opacity-75">${t.desc}</span>
+                    ${state.storeType === t.id ? '<i class="fas fa-check-circle absolute top-1 right-1 text-xs"></i>' : ''}
+                </button>
+            `).join('');
+        }
+
+        function setStoreType(id) {
+            state.storeType = id;
+            renderStoreTypes();
+        }
+
+        function renderPainPoints() {
+            const container = document.getElementById('painPointsContainer');
+            container.innerHTML = PAIN_POINTS_OPTIONS.map(p => `
+                <button onclick="togglePainPoint('${p}')" class="text-xs py-2 px-1 rounded-md border transition-all ${state.selectedPainPoints.includes(p) ? 'pain-point-selected' : 'bg-slate-800 border-slate-700 text-slate-400'}">
+                    ${p}
+                </button>
+            `).join('');
+        }
+
+        function togglePainPoint(p) {
+            if (state.selectedPainPoints.includes(p)) {
+                state.selectedPainPoints = state.selectedPainPoints.filter(item => item !== p);
+            } else {
+                state.selectedPainPoints.push(p);
+            }
+            renderPainPoints();
+        }
+
+        function renderPresetQA() {
+            document.getElementById('presetQuestions').innerHTML = PRESET_QA_TAGS.map(tag => 
+                `<button onclick="askAI('${tag}')" class="text-xs bg-slate-700 hover:bg-blue-600 hover:text-white text-slate-300 px-3 py-1.5 rounded-full transition-colors border border-slate-600">${tag}</button>`
+            ).join('');
+        }
+
+        // --- Core Logic ---
+        function handleGenerate() {
+            if(!state.targetRevenue || state.selectedPainPoints.length === 0) {
+                alert("老板，请填写业绩目标并至少选择一个核心痛点！");
+                return;
+            }
+
+            // Loading visual
+            const btn = document.getElementById('generateBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 正在推演策略...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                generateResult();
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                document.getElementById('emptyState').classList.add('hidden');
+                document.getElementById('generatedContent').classList.remove('hidden');
+                window.scrollTo({ top: document.getElementById('outputSection').offsetTop, behavior: 'smooth' });
+            }, 1200);
+        }
+
+        function generateResult() {
+            // Gather inputs
+            const shopName = document.getElementById('studioName').value || '强中强瑜伽';
+            const totalMembers = parseInt(document.getElementById('memGroup').value) + parseInt(document.getElementById('memSmall').value) + parseInt(document.getElementById('memPrivate').value);
+            
+            const priceOpt = PRICE_RANGE_OPTIONS.find(p => p.id === state.priceRange);
+            const avgTicket = priceOpt.avg;
+            const closeRate = state.storeType === 'studio' ? 0.35 : 0.20;
+            const neededLeads = Math.ceil(state.targetRevenue / (avgTicket * closeRate));
+            const neededSales = Math.ceil(state.targetRevenue / avgTicket);
+
+            // Strategy Logic
+            let theme = "全城热练";
+            let logic = "通过多维度营销组合拳，打破流量瓶颈。";
+            if (state.selectedPainPoints.includes("严重缺新客")) { theme = "破冰行动"; logic = "核心痛点是流量，重点在于降低门槛，制造爆点。"; }
+
+            // Card Logic
+            const cards = generateCardMatrix(state.storeType, state.priceRange, avgTicket);
+            let designLogic = "基于您的场馆类型和定价区间，我们设计了五维一体的卡项结构。";
+            if(totalMembers < 50) designLogic += "当前会员基数较小，重点在于引流裂变。";
+
+            // Render Sections
+            
+            // 1. Strategy
+            document.getElementById('strategyLocation').innerText = `${state.province}${state.city} ${state.district} · ${STORE_TYPE_OPTIONS.find(t => t.id === state.storeType).label}`;
+            document.getElementById('strategyTheme').innerText = theme;
+            document.getElementById('strategyLogic').innerText = logic;
+
+            // 2. Cards
+            document.getElementById('cardDesignLogic').innerText = designLogic;
+            document.getElementById('cardTableBody').innerHTML = cards.map(c => `
+                <tr class="hover:bg-slate-700/30 transition-colors border-b border-slate-700/50">
+                    <td class="p-3 align-top"><span class="inline-block px-2 py-1 rounded text-xs font-bold bg-slate-700 text-slate-300">${c.type}</span></td>
+                    <td class="p-3 align-top font-bold text-white text-sm">${c.name}</td>
+                    <td class="p-3 align-top text-sm text-slate-300">${c.content}</td>
+                    <td class="p-3 align-top"><div class="font-bold text-orange-400">${c.price}</div></td>
+                    <td class="p-3 align-top text-sm text-slate-300 font-mono text-xs">${c.unit}</div></td>
+                    <td class="p-3 align-top text-xs text-slate-300">${c.target}</td>
+                    <td class="p-3 align-top text-xs text-slate-400 leading-tight">${c.position}</td>
+                </tr>
+            `).join('');
+
+            // 3. Math
+            document.getElementById('mathLeads').innerText = neededLeads;
+            document.getElementById('mathTicket').innerText = `¥${avgTicket}`;
+            document.getElementById('mathRate').innerText = `${(closeRate * 100)}%`;
+            document.getElementById('mathTarget').innerText = `¥${parseInt(state.targetRevenue).toLocaleString()}`;
+            document.getElementById('mathComment').innerText = `✅ 测算逻辑：${state.targetRevenue} / (${avgTicket} x ${closeRate * 100}%) ≈ ${neededLeads}人。\n基于【${priceOpt.label}】客单价。${totalMembers < 50 ? '新店期建议重引流。' : '稳定期建议重转介绍。'}`;
+
+            // 4. Calendar Content
+            updateDailyContent(shopName);
+
+            // 5. Private Scripts
+            const pScripts = generatePrivateScripts(state.storeType, shopName);
+            document.getElementById('privateScriptsContainer').innerHTML = `
+                ${renderScriptRow("💀 死客唤醒", "text-slate-400", pScripts.dead, "fa-user-times")}
+                ${renderScriptRow("⚡ 呆客激活", "text-orange-400", pScripts.dormant, "fa-bolt")}
+                ${renderScriptRow("🌱 潜客背书", "text-blue-400", pScripts.potential, "fa-seedling")}
+                ${renderScriptRow("🔥 活跃裂变", "text-green-400", pScripts.active, "fa-fire")}
+            `;
+        }
+
+        function generateCardMatrix(type, rangeId, basePrice) {
+            // Logic ported from React
+            let multiplier = type === 'studio' ? 1.5 : 1;
+            const cards = [
+                 { type: "利润私教卡A", name: "私教 10 次改善卡", content: "10 节 / 3-4 个月", price: `¥${Math.round(basePrice * 0.8)}`, unit: `¥${Math.round(basePrice * 0.08)}/节`, target: "体态/减脂", position: "高毛利" },
+                 { type: "利润私教卡B", name: "私教 20 次蜕变卡", content: "20 节 / 6-8 个月", price: `¥${Math.round(basePrice * 1.5)}`, unit: `¥${Math.round(basePrice * 0.075)}/节`, target: "高净值", position: "阶段改变" },
+                 { type: "小班高阶卡", name: "普拉提小班卡", content: "30 节 / 6-9 个月", price: `¥${Math.round(basePrice * 1.2)}`, unit: `¥${Math.round(basePrice * 0.04)}/节`, target: "产后修复", position: "专案课程" },
+                 { type: "年度尊享卡", name: "黑金年卡", content: "年度畅练+赠课", price: `¥${Math.round(basePrice * 2.5)}`, unit: "月均低", target: "铁粉", position: "现金流" },
+                 { type: "家庭/双人卡", name: "双人共享卡", content: "2人共享", price: `¥${Math.round(basePrice * 3.0)}`, unit: "高性价比", target: "闺蜜/夫妻", position: "粘性" }
+            ];
+            return cards;
+        }
+
+        function generatePrivateScripts(type, name) {
+            const isHighEnd = type === 'studio' || type === 'mall';
+            return {
+                dead: isHighEnd ? `【${name}·老友记】亲爱的，好久不见...` : `【${name}·回归礼】姐，好久没见你了！...`,
+                dormant: isHighEnd ? `【${name}·专属邀约】内测课邀请...` : `【${name}·喊你回来】宝，最近是不是偷懒啦？...`,
+                potential: isHighEnd ? `【${name}·专业解答】我是店长...` : `【${name}·新人福利】姐，考虑得怎么样啦？...`,
+                active: isHighEnd ? `【${name}·感恩礼】您最近状态太棒了...` : `【${name}·合伙人】姐，您简直是我们的活招牌...`
+            };
+        }
+
+        function renderScriptRow(label, colorClass, content, icon) {
+            return `
+                <div class="p-6 hover:bg-slate-700/20 transition-colors group">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-bold flex items-center ${colorClass}">
+                            <i class="fas ${icon} w-4 h-4 mr-2"></i> ${label}
+                        </h4>
+                        <button onclick="copyText(this, '${content.replace(/\n/g, "\\n")}')" class="text-xs flex items-center bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded transition-colors">
+                            <i class="fas fa-copy mr-1"></i> 复制
+                        </button>
+                    </div>
+                    <div class="bg-slate-900 rounded-lg p-4 border border-slate-700 font-mono text-sm text-slate-300 whitespace-pre-line leading-relaxed">${content}</div>
+                </div>
+            `;
+        }
+
+        function changeDate(offset) {
+            state.currentDate.setDate(state.currentDate.getDate() + offset);
+            const shopName = document.getElementById('studioName').value || '强中强瑜伽';
+            updateDailyContent(shopName);
+        }
+
+        function updateDailyContent(shopName) {
+            const date = state.currentDate;
+            const dayIndex = date.getDate();
+            const vibe = DAILY_VIBES[dayIndex % 10];
+            const dayOfWeek = WEEKLY_THEMES[date.getDay()];
+            
+            document.getElementById('calendarDateDisplay').innerHTML = `${date.getMonth()+1}月${date.getDate()}日 <span class="ml-1 text-xs text-slate-400">${dayOfWeek.day}</span>`;
+            document.getElementById('dailyVibeTag').innerText = `今日剧本：${vibe.name}`;
+
+            // 1. Moments
+            // Logic to generate 3 lines based on vibe and store type
+            let m_c = "", a_c = "", e_c = "";
+            if (vibe.name === "硬核干货日") {
+                m_c = `早安·自测\n你的斜方肌为什么厚？\n可能是睡觉耸肩！`;
+                a_c = `午间·科普\n久坐腰痛？\n一个动作缓解（见图）。`;
+                e_c = `晚安·坚持\n量变引起质变。\n坚持打卡！`;
+            } else {
+                // Default fallback logic
+                m_c = `早安！${dayOfWeek.day}。\n新的一天从深呼吸开始。\n#${shopName}`;
+                a_c = `午休时间。\n来馆里充个电吧。\n#瑜伽生活`;
+                e_c = `晚安。\n卸下一身疲惫。\n明天见。`;
+            }
+
+            const momentsHTML = `
+                <div class="relative pl-8 border-l-2 border-slate-700 pb-6">
+                    <div class="absolute -left-[9px] top-0 bg-slate-800 border border-slate-600 p-1 rounded-full"><i class="fas fa-sun text-orange-400 text-xs"></i></div>
+                    <div class="mb-1 flex items-center"><span class="text-xs font-bold bg-slate-700 text-slate-300 px-2 py-0.5 rounded mr-2">10:00</span><span class="text-sm font-bold text-white">早安·${vibe.name}</span></div>
+                    <div class="bg-slate-900/80 rounded-lg p-4 border border-slate-700 font-mono text-sm text-slate-300 whitespace-pre-line mt-2">${m_c}</div>
+                </div>
+                <div class="relative pl-8 border-l-2 border-slate-700 pb-6">
+                    <div class="absolute -left-[9px] top-0 bg-slate-800 border border-slate-600 p-1 rounded-full"><i class="fas fa-coffee text-yellow-400 text-xs"></i></div>
+                    <div class="mb-1 flex items-center"><span class="text-xs font-bold bg-slate-700 text-slate-300 px-2 py-0.5 rounded mr-2">14:00</span><span class="text-sm font-bold text-white">午间·能量</span></div>
+                    <div class="bg-slate-900/80 rounded-lg p-4 border border-slate-700 font-mono text-sm text-slate-300 whitespace-pre-line mt-2">${a_c}</div>
+                </div>
+                <div class="relative pl-8 border-l-2 border-slate-700">
+                    <div class="absolute -left-[9px] top-0 bg-slate-800 border border-slate-600 p-1 rounded-full"><i class="fas fa-moon text-blue-400 text-xs"></i></div>
+                    <div class="mb-1 flex items-center"><span class="text-xs font-bold bg-slate-700 text-slate-300 px-2 py-0.5 rounded mr-2">20:00</span><span class="text-sm font-bold text-white">晚安·${dayOfWeek.day}</span></div>
+                    <div class="bg-slate-900/80 rounded-lg p-4 border border-slate-700 font-mono text-sm text-slate-300 whitespace-pre-line mt-2">${e_c}</div>
+                </div>
+            `;
+            document.getElementById('momentsContainer').innerHTML = momentsHTML;
+
+            // 2. Douyin
+            document.getElementById('douyinTitle').innerText = `${vibe.name}：${shopName}的${dayOfWeek.day}`;
+            document.getElementById('douyinContent').innerText = `今天是${vibe.name}，带大家看看我们的日常。\n#${shopName} #瑜伽`;
+            document.getElementById('douyinBgm').innerText = "轻快Vlog / 卡点音乐";
+            document.getElementById('douyinScript').innerHTML = `
+                <div class="flex text-xs border-l-2 border-slate-600 pl-3 py-1"><span class="text-slate-400 font-mono w-12 shrink-0">0-3s</span><div class="text-slate-300"><span class="text-orange-400 font-bold">画面：</span>吸睛开场 <span class="text-blue-400 font-bold ml-1">声音：</span>重音/提问</div></div>
+                <div class="flex text-xs border-l-2 border-slate-600 pl-3 py-1"><span class="text-slate-400 font-mono w-12 shrink-0">3-8s</span><div class="text-slate-300"><span class="text-orange-400 font-bold">画面：</span>核心展示 <span class="text-blue-400 font-bold ml-1">声音：</span>BGM切入</div></div>
+            `;
+
+            // 3. XHS
+            document.getElementById('xhsTitle').innerText = `${vibe.name} | ${shopName}日记`;
+            document.getElementById('xhsContent').innerText = `今天是${dayOfWeek.day}，分享一个${vibe.name}主题！\n📍${state.district}`;
+        }
+
+        // --- Utilities ---
+        function copyText(btnOrId, text) {
+            const content = typeof btnOrId === 'string' ? document.getElementById(btnOrId).innerText : text;
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = typeof btnOrId === 'string' ? document.querySelector(`button[onclick="copyText('${btnOrId}')"]`) : btnOrId;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check text-green-500"></i> 已复制';
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            });
+        }
+
+        function askAI(presetQ) {
+            const q = presetQ || document.getElementById('qaInput').value;
+            if (!q) return;
+            
+            const responseBox = document.getElementById('aiResponseContainer');
+            const responseText = document.getElementById('aiResponseText');
+            const btn = document.getElementById('qaBtn');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Mock AI Logic
+            let answer = "这是一个非常好的问题。建议您梳理财务模型。";
+            if(q.includes("引流")) answer = "【新店引流三板斧】\n1. 地推升级：带体测仪去小区门口。\n2. 异业合作：找周边美甲店互推。\n3. 团购引流：9.9元体验课只为留资。";
+            if(q.includes("续费") || q.includes("老会员")) answer = "【提升续费率】\n1. 耗卡预警：剩3节课必须提醒。\n2. 情感账户：过节送小礼物。\n3. 效果外化：每季度做体测对比。";
+            
+            setTimeout(() => {
+                responseBox.classList.remove('hidden');
+                responseText.innerText = answer;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                document.getElementById('qaInput').value = '';
+            }, 1000);
+        }
+
+        // Start
+        init();
+
     </script>
 </body>
-
 </html>
